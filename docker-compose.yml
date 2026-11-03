@@ -1,0 +1,14 @@
+# Sobe só o PostgreSQL para desenvolvimento: docker compose up -d
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: fila
+      POSTGRES_PASSWORD: fila
+      POSTGRES_DB: fila_donana
+    ports:
+      - "5432:5432"
+    volumes:
+      - dados:/var/lib/postgresql/data
+volumes:
+  dados:
