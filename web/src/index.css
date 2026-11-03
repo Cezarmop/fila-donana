@@ -23,7 +23,7 @@ body { margin: 0; min-height: 100vh; background: var(--creme); }
 .discreto { color: var(--discreto); font-size: 0.9rem; }
 
 .cabecalho { text-align: center; margin: 8px 0 16px; }
-.cabecalho img { width: 220px; max-width: 70%; mix-blend-mode: multiply; }
+.cabecalho img { width: 220px; max-width: 70%; }
 .cabecalho p { margin: 4px 0 0; font-weight: 600; font-size: 1.15rem; }
 
 .cartao {
@@ -79,7 +79,7 @@ label.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: va
 
 /* Painel */
 .barra-painel { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.barra-painel img { height: 56px; mix-blend-mode: multiply; }
+.barra-painel img { height: 56px; }
 .resumo { display: flex; gap: 16px; flex: 1; flex-wrap: wrap; }
 .resumo strong { color: var(--laranja); font-size: 1.3rem; }
 
@@ -105,7 +105,7 @@ label.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: va
 
 /* Cartaz para impressão */
 .cartaz { max-width: 600px; margin: 0 auto; padding: 24px; text-align: center; }
-.cartaz img { width: 300px; max-width: 80%; mix-blend-mode: multiply; }
+.cartaz img { width: 300px; max-width: 80%; }
 .cartaz h1 { color: var(--laranja); }
 .cartaz .qr { width: 320px; max-width: 90%; margin: 0 auto; background: #fff; padding: 12px; border-radius: 12px; }
 .cartaz ol { text-align: left; display: inline-block; font-size: 1.1rem; }
