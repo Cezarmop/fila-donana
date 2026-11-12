@@ -50,6 +50,21 @@ Testes da API (atenção: limpam a tabela do banco do `DATABASE_URL`, use um ban
 cd server && npm test
 ```
 
+## App Android (APK de teste)
+
+A pasta `android/` tem um app nativo simples (Java, WebView) que abre o site da fila dentro do celular.
+Na primeira tela o usuário digita o endereço do servidor (ex.: `http://192.168.0.10:5173`) e escolhe
+**Entrar na fila (cliente)** ou **Painel da recepção**. Links para o WhatsApp (`wa.me`) abrem no app do WhatsApp.
+
+O APK **não funciona sozinho**: ele mostra as telas que vêm do computador que roda o site e a API.
+Para testar, rode `server` e `web` como acima e deixe o celular na mesma rede Wi-Fi do computador.
+
+Compilação: o workflow `.github/workflows/android-apk.yml` gera `app-debug.apk` no GitHub Actions
+(aba *Actions* → execução → *Artifacts*). Localmente, com o Android SDK instalado: `cd android && ./gradlew assembleDebug`.
+
+Limitações desta versão de teste: assinada com chave de *debug* (não serve para a Play Store) e permite HTTP sem
+criptografia (`network_security_config.xml`). Depois do deploy com HTTPS, trocar para só HTTPS.
+
 ## Aviso pelo WhatsApp
 
 Configurado por `WHATSAPP_MODO` no `server/.env`:

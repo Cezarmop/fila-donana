@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Versão de TESTE: permite HTTP sem criptografia para falar com o computador na rede local
+     (ex.: http://192.168.0.10:5173). Em produção, use só HTTPS e remova isto. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

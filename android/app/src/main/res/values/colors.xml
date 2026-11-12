@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="laranja">#D9661F</color>
+    <color name="fundo">#FFF8F2</color>
+    <color name="texto">#2B1A10</color>
+    <color name="branco">#FFFFFF</color>
+</resources>
