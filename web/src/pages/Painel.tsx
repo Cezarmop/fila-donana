@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import Cabecalho from './Cabecalho'
-import { api, ErroApi, formatarTelefone, minutosDesde, socket, type Entrada, type Status } from '../lib/api'
+import { api, ErroApi, formatarTelefone, minutosDesde, type Entrada, type Status, useAtualizacaoPeriodica } from '../lib/api'
 
 const CHAVE_TOKEN = 'fila-donana:painel'
 
@@ -58,13 +58,11 @@ export default function Painel() {
     }
   }, [token, sair])
 
+  useAtualizacaoPeriodica(carregar)
   useEffect(() => {
-    carregar()
-    socket.on('fila:mudou', carregar)
-    socket.on('connect', carregar)
     const tique = setInterval(() => setRelogio((n) => n + 1), 30_000) // atualiza os "há X min"
-    return () => { socket.off('fila:mudou', carregar); socket.off('connect', carregar); clearInterval(tique) }
-  }, [carregar])
+    return () => clearInterval(tique)
+  }, [])
 
   if (!token) return <Login aoEntrar={(t) => { sessionStorage.setItem(CHAVE_TOKEN, t); setToken(t) }} />
 

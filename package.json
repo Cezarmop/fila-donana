@@ -1,0 +1,8 @@
+{
+  "name": "fila-donana",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  }
+}

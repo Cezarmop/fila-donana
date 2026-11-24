@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import Cabecalho from './Cabecalho'
-import { api, limparEntradaLocal, socket, type StatusCliente } from '../lib/api'
+import { api, limparEntradaLocal, type StatusCliente, useAtualizacaoPeriodica } from '../lib/api'
 
 export default function Acompanhar() {
   const { id } = useParams()
@@ -24,17 +24,7 @@ export default function Acompanhar() {
     }
   }, [id, token])
 
-  useEffect(() => {
-    carregar()
-    socket.on('fila:mudou', carregar)
-    socket.on('connect', carregar) // reconectou (ex.: celular saiu do modo de espera)
-    const intervalo = setInterval(carregar, 30_000) // garantia caso o WebSocket caia
-    return () => {
-      socket.off('fila:mudou', carregar)
-      socket.off('connect', carregar)
-      clearInterval(intervalo)
-    }
-  }, [carregar])
+  useAtualizacaoPeriodica(carregar)
 
   async function desistir() {
     if (!confirm('Deseja mesmo sair da fila?')) return

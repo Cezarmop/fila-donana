@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client'
+import { useEffect } from 'react'
 
 export type Status = 'aguardando' | 'chamado' | 'atendido' | 'nao_compareceu' | 'cancelado'
 
@@ -47,8 +47,36 @@ export async function api<T>(caminho: string, opcoes: { method?: string; body?: 
   return dados as T
 }
 
-/** Uma conexão só para o app todo. O servidor emite "fila:mudou" sem dados. */
-export const socket = io({ autoConnect: true })
+/** Intervalo da atualização automática das telas (consulta periódica / polling). */
+export const INTERVALO_ATUALIZACAO_MS = 5_000
+
+/**
+ * Atualiza a tela de tempos em tempos (polling). Substitui o WebSocket porque a hospedagem
+ * (Vercel Functions) não garante uma conexão aberta e compartilhada entre instâncias.
+ * Para quando a aba fica em segundo plano e atualiza na hora quando ela volta.
+ */
+export function useAtualizacaoPeriodica(carregar: () => void, intervaloMs = INTERVALO_ATUALIZACAO_MS) {
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined
+    const iniciar = () => {
+      clearInterval(timer)
+      carregar()
+      timer = setInterval(carregar, intervaloMs)
+    }
+    const aoMudarVisibilidade = () => {
+      if (document.hidden) clearInterval(timer)
+      else iniciar()
+    }
+    iniciar()
+    document.addEventListener('visibilitychange', aoMudarVisibilidade)
+    window.addEventListener('online', iniciar)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', aoMudarVisibilidade)
+      window.removeEventListener('online', iniciar)
+    }
+  }, [carregar, intervaloMs])
+}
 
 export function minutosDesde(iso: string): number {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))

@@ -10,7 +10,7 @@ quem chegou ou não veio.
 | Camada | Tecnologia |
 |---|---|
 | Frontend | React + TypeScript (Vite), React Router |
-| Backend | Node.js + TypeScript, Express 5, Socket.IO (tempo real), Zod (validação) |
+| Backend | Node.js + TypeScript, Express 5, atualização por polling, Zod (validação) |
 | Banco | PostgreSQL 16 |
 | Testes | Vitest + Supertest |
 
@@ -50,27 +50,24 @@ Testes da API (atenção: limpam a tabela do banco do `DATABASE_URL`, use um ban
 cd server && npm test
 ```
 
-## Publicação (Render + domínio donana.cezbyte.com.br)
+## Publicação (Vercel + domínio donana.cezbyte.com.br)
 
-Em produção um único serviço Node entrega o site (`web/dist`), a API e o WebSocket no mesmo endereço.
-O arquivo `render.yaml` (Blueprint do Render) cria o PostgreSQL e o serviço web, e já declara o domínio
-`donana.cezbyte.com.br`. Ao iniciar, o serviço roda `migrate` (o `schema.sql` pode rodar várias vezes sem problema).
+Na Vercel o site (`web/dist`) é servido como arquivo estático e a API Express roda como função
+(`api/index.js`, que usa o mesmo `criarApp()` do servidor). A configuração está em `vercel.json`.
+O build roda `migrate` no banco (o `schema.sql` pode rodar várias vezes sem problema), então o
+`DATABASE_URL` precisa existir antes do primeiro deploy.
 
-1. Em https://dashboard.render.com: **New > Blueprint**, conecte o GitHub e escolha `cezarmop/fila-donana`.
-2. Informe a `PAINEL_SENHA` quando pedir (o `JWT_SECRET` é gerado sozinho) e aplique.
-3. Anote o endereço do serviço (ex.: `fila-donana.onrender.com`; pode vir com sufixo se o nome já existir).
-4. Na Hostinger (hPanel > Domínios > cezbyte.com.br > DNS), crie o registro:
+**Tempo real:** as funções da Vercel não mantêm um servidor WebSocket único compartilhado entre instâncias,
+então as telas do cliente e do painel se atualizam por consulta periódica (*polling*) a cada 5 segundos,
+pausando quando a aba fica em segundo plano. O aviso de "Sua mesa está pronta" aparece em até ~5 s.
 
-   | Tipo | Nome | Aponta para | TTL |
-   |---|---|---|---|
-   | CNAME | `donana` | `<endereço do passo 3>` | padrão |
+Variáveis de ambiente (Vercel > Project > Settings > Environment Variables):
+`DATABASE_URL` (PostgreSQL, ex.: Neon pela aba *Storage*), `PAINEL_SENHA`, `JWT_SECRET`,
+`WEB_URL=https://donana.cezbyte.com.br`, `VITE_PUBLIC_URL=https://donana.cezbyte.com.br`, `WHATSAPP_MODO=link`.
 
-5. No Render, em *Settings > Custom Domains*, clique em **Verify**. O certificado HTTPS é emitido pelo Render.
-
-Limites do plano gratuito (confira os atuais em https://render.com/docs/free): o serviço "dorme" depois de um
-tempo sem acesso e o primeiro acesso seguinte demora; o PostgreSQL gratuito do Render tem prazo de validade.
-Para uma demonstração, abra o site alguns minutos antes. Se o banco expirar, dá para trocar `DATABASE_URL`
-por outro PostgreSQL (ex.: Neon ou Supabase) sem mudar código.
+Subdomínio: adicionar `donana.cezbyte.com.br` em *Settings > Domains* e criar na Hostinger
+(hPanel > Domínios > cezbyte.com.br > DNS) o registro CNAME que a Vercel mostrar
+(normalmente `donana` → `cname.vercel-dns.com`; use o valor exibido no painel da Vercel).
 
 ## App Android (APK de teste)
 
@@ -113,9 +110,9 @@ consegue ver ou cancelar a própria entrada, e o telefone nunca é exibido para 
 
 ## Decisões e limitações conhecidas (bom material para o TCC)
 
-- O WebSocket só avisa "a fila mudou", sem dados; cada tela busca na API o que tem permissão de ver.
+- As telas consultam a API periodicamente (polling) e cada uma só recebe o que tem permissão de ver.
   Há também uma atualização a cada 30 s caso a conexão caia (comum quando o celular bloqueia a tela).
 - O mesmo telefone não entra duas vezes na fila ativa (ler o QR de novo devolve a mesma entrada).
 - Login do painel com uma senha única (`PAINEL_SENHA`) e token JWT de 14 h. Para vários funcionários, criar tabela de usuários.
 - **A fazer:** limitar requisições por IP no cadastro (anti-spam), política de retenção/exclusão dos dados (LGPD),
-  estimativa de tempo de espera, deploy (ex.: Render/Railway + PostgreSQL gerenciado), relatórios de tempo médio de espera.
+  estimativa de tempo de espera, relatórios de tempo médio de espera.
