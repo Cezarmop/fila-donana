@@ -54,8 +54,9 @@ cd server && npm test
 
 Na Vercel o site (`web/dist`) é servido como arquivo estático e a API Express roda como função
 (`api/index.js`, que usa o mesmo `criarApp()` do servidor). A configuração está em `vercel.json`.
-O build roda `migrate` no banco (o `schema.sql` pode rodar várias vezes sem problema), então o
-`DATABASE_URL` precisa existir antes do primeiro deploy.
+O build de **produção** roda `migrate` no banco (o `schema.sql` pode rodar várias vezes sem problema), então o
+`DATABASE_URL` precisa existir antes do primeiro deploy. Deploys de *preview* (PRs) não rodam a migração,
+para não alterar o banco de produção antes do merge.
 
 **Tempo real:** as funções da Vercel não mantêm um servidor WebSocket único compartilhado entre instâncias,
 então as telas do cliente e do painel se atualizam por consulta periódica (*polling*) a cada 5 segundos,
