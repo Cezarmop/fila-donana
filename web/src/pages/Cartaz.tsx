@@ -1,24 +1,20 @@
-import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
+import QrEntrada from './QrEntrada'
+import { urlEntrada } from '../lib/api'
 
-/** Cartaz para imprimir e colar na porta. O QR aponta para /entrar deste mesmo site. */
+/** Cartaz para imprimir e colar na porta ou no balcão da recepção. O QR aponta para /entrar. */
 export default function Cartaz() {
-  const url = `${import.meta.env.VITE_PUBLIC_URL ?? window.location.origin}/entrar`
-  const [svg, setSvg] = useState('')
-  useEffect(() => {
-    QRCode.toString(url, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }).then(setSvg)
-  }, [url])
   return (
     <main className="cartaz">
       <img src="/logo.png" alt="Restaurante & Churrascaria Don'Ana" />
       <h1>Entre na fila pelo celular</h1>
-      <div className="qr" dangerouslySetInnerHTML={{ __html: svg }} />
+      <QrEntrada />
       <ol>
         <li>Aponte a câmera para o código</li>
         <li>Preencha nome, sobrenome e celular</li>
         <li>Avisamos pelo WhatsApp quando sua mesa estiver pronta</li>
       </ol>
-      <p className="discreto">{url}</p>
+      <p>Não conseguiu? Peça para a recepção colocar seu nome na fila.</p>
+      <p className="discreto">{urlEntrada()}</p>
       <button className="botao primario nao-imprimir" onClick={() => window.print()}>Imprimir</button>
     </main>
   )

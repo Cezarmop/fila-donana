@@ -20,7 +20,7 @@ quem chegou ou não veio.
 |---|---|---|
 | `/entrar` | Cliente (abre pelo QR) | Cadastro na fila com aceite de privacidade (LGPD) |
 | `/acompanhar/:id?token=…` | Cliente | Posição em tempo real; aviso visual e vibração quando chamado; sair da fila |
-| `/painel` | Recepção (senha) | Fila em ordem de chegada; Chamar, Chegou, Chamar de novo, Não veio, Remover; histórico de 12 h |
+| `/painel` | Recepção (senha) | Fila em ordem de chegada; Chamar, Chegou, Chamar de novo, Não veio, Remover; histórico de 12 h; **Adicionar à fila** (para quem tem dificuldade com o QR, celular opcional) e **QR code** na tela |
 | `/cartaz` | Recepção | Cartaz com QR code para imprimir e colar na porta |
 
 ## Como rodar (desenvolvimento)

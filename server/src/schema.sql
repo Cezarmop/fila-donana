@@ -21,3 +21,9 @@ CREATE TABLE IF NOT EXISTS entradas_fila (
 );
 
 CREATE INDEX IF NOT EXISTS idx_entradas_status_criado ON entradas_fila (status, criado_em);
+
+-- v2: a recepção pode cadastrar quem tem dificuldade com o QR code.
+-- Telefone passa a ser opcional (sem telefone, a recepção chama na porta)
+-- e a coluna "origem" registra quem fez o cadastro (útil para métricas do TCC).
+ALTER TABLE entradas_fila ALTER COLUMN telefone DROP NOT NULL;
+ALTER TABLE entradas_fila ADD COLUMN IF NOT EXISTS origem VARCHAR(10) NOT NULL DEFAULT 'qr';

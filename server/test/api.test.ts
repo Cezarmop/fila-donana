@@ -86,3 +86,39 @@ describe('painel', () => {
     expect(lista.body.map((e: { nome: string }) => e.nome)).toEqual(['João', 'Maria']);
   });
 });
+
+describe('cadastro pela recepção', () => {
+  const auth = () => ({ Authorization: `Bearer ${tokenPainel}` });
+
+  it('exige login', async () => {
+    expect((await request(app).post('/api/painel/fila').send({ nome: 'Ana', pessoas: 2, consentimento: true })).status).toBe(401);
+  });
+
+  it('adiciona sem telefone e chama sem WhatsApp', async () => {
+    const r = await request(app).post('/api/painel/fila').set(auth()).send({ nome: 'Seu José', pessoas: 3, consentimento: true });
+    expect(r.status).toBe(201);
+    expect(avisos).toBe(1);
+    const lista = await request(app).get('/api/painel/fila').set(auth());
+    expect(lista.body[0]).toMatchObject({ nome: 'Seu José', sobrenome: '', telefone: null, pessoas: 3, origem: 'recepcao' });
+    const c = await request(app).post(`/api/painel/fila/${r.body.id}/chamar`).set(auth());
+    expect(c.status).toBe(200);
+    expect(c.body.notificacao).toBeNull();
+  });
+
+  it('entra na mesma fila, na ordem de chegada', async () => {
+    const a = await request(app).post('/api/fila').send(cliente());
+    await request(app).post('/api/painel/fila').set(auth()).send({ nome: 'Rita', telefone: '(48) 98888-0003', pessoas: 2, consentimento: true });
+    const lista = await request(app).get('/api/painel/fila').set(auth());
+    expect(lista.body.map((e: { nome: string }) => e.nome)).toEqual(['Maria', 'Rita']);
+    expect(lista.body[0]).toMatchObject({ id: a.body.id, origem: 'qr' });
+  });
+
+  it('valida telefone, consentimento e duplicidade', async () => {
+    const base = { nome: 'Rita', pessoas: 2, consentimento: true };
+    expect((await request(app).post('/api/painel/fila').set(auth()).send({ ...base, consentimento: false })).status).toBe(400);
+    expect((await request(app).post('/api/painel/fila').set(auth()).send({ ...base, telefone: '123' })).status).toBe(400);
+    await request(app).post('/api/fila').send(cliente());
+    const dup = await request(app).post('/api/painel/fila').set(auth()).send({ ...base, telefone: '48999990001' });
+    expect(dup.status).toBe(409);
+  });
+});

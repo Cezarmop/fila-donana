@@ -114,3 +114,12 @@ label.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: va
   .nao-imprimir { display: none; }
 }
 .nowrap { white-space: nowrap; }
+
+/* Painel: adicionar à fila e QR code da recepção */
+.adicionar h2 { margin: 0; font-size: 1.2rem; }
+.linha-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.acoes-form { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.adicionar, .qr-recepcao { margin-bottom: 16px; }
+.qr-recepcao .qr { width: 280px; max-width: 80%; margin: 0 auto; background: #fff; padding: 12px; border-radius: 12px; }
+.etiqueta { margin-left: 8px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  background: var(--borda); color: var(--texto); padding: 2px 6px; border-radius: 6px; vertical-align: middle; }
