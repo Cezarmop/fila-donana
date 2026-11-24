@@ -1,13 +1,11 @@
 import { createServer } from 'node:http';
-import { Server } from 'socket.io';
 import { config } from './config.js';
 import { criarApp } from './app.js';
 
-let io: Server;
-// Não manda dados pelo socket: só avisa que "algo mudou" e cada tela busca o que pode ver.
-const app = criarApp(() => io.emit('fila:mudou'));
-const server = createServer(app);
-io = new Server(server, { cors: { origin: config.webUrl } });
+// Servidor para rodar localmente (npm run dev / npm start).
+// Na Vercel quem recebe as requisições é api/index.js, que usa o mesmo criarApp().
+// As telas se atualizam por consulta periódica (polling), então não há WebSocket.
+const server = createServer(criarApp());
 
 server.listen(config.port, () => {
   console.log(`API da fila rodando em http://localhost:${config.port}`);

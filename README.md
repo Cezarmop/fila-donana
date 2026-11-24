@@ -10,7 +10,7 @@ quem chegou ou não veio.
 | Camada | Tecnologia |
 |---|---|
 | Frontend | React + TypeScript (Vite), React Router |
-| Backend | Node.js + TypeScript, Express 5, Socket.IO (tempo real), Zod (validação) |
+| Backend | Node.js + TypeScript, Express 5, atualização por polling, Zod (validação) |
 | Banco | PostgreSQL 16 |
 | Testes | Vitest + Supertest |
 
@@ -49,6 +49,25 @@ Testes da API (atenção: limpam a tabela do banco do `DATABASE_URL`, use um ban
 ```bash
 cd server && npm test
 ```
+
+## Publicação (Vercel + domínio donana.cezbyte.com.br)
+
+Na Vercel o site (`web/dist`) é servido como arquivo estático e a API Express roda como função
+(`api/index.js`, que usa o mesmo `criarApp()` do servidor). A configuração está em `vercel.json`.
+O build roda `migrate` no banco (o `schema.sql` pode rodar várias vezes sem problema), então o
+`DATABASE_URL` precisa existir antes do primeiro deploy.
+
+**Tempo real:** as funções da Vercel não mantêm um servidor WebSocket único compartilhado entre instâncias,
+então as telas do cliente e do painel se atualizam por consulta periódica (*polling*) a cada 5 segundos,
+pausando quando a aba fica em segundo plano. O aviso de "Sua mesa está pronta" aparece em até ~5 s.
+
+Variáveis de ambiente (Vercel > Project > Settings > Environment Variables):
+`DATABASE_URL` (PostgreSQL, ex.: Neon pela aba *Storage*), `PAINEL_SENHA`, `JWT_SECRET`,
+`WEB_URL=https://donana.cezbyte.com.br`, `VITE_PUBLIC_URL=https://donana.cezbyte.com.br`, `WHATSAPP_MODO=link`.
+
+Subdomínio: adicionar `donana.cezbyte.com.br` em *Settings > Domains* e criar na Hostinger
+(hPanel > Domínios > cezbyte.com.br > DNS) o registro CNAME que a Vercel mostrar
+(normalmente `donana` → `cname.vercel-dns.com`; use o valor exibido no painel da Vercel).
 
 ## App Android (APK de teste)
 
@@ -91,9 +110,8 @@ consegue ver ou cancelar a própria entrada, e o telefone nunca é exibido para 
 
 ## Decisões e limitações conhecidas (bom material para o TCC)
 
-- O WebSocket só avisa "a fila mudou", sem dados; cada tela busca na API o que tem permissão de ver.
-  Há também uma atualização a cada 30 s caso a conexão caia (comum quando o celular bloqueia a tela).
+- As telas consultam a API a cada 5 s (polling), pausando com a aba em segundo plano; cada uma só recebe o que tem permissão de ver.
 - O mesmo telefone não entra duas vezes na fila ativa (ler o QR de novo devolve a mesma entrada).
 - Login do painel com uma senha única (`PAINEL_SENHA`) e token JWT de 14 h. Para vários funcionários, criar tabela de usuários.
 - **A fazer:** limitar requisições por IP no cadastro (anti-spam), política de retenção/exclusão dos dados (LGPD),
-  estimativa de tempo de espera, deploy (ex.: Render/Railway + PostgreSQL gerenciado), relatórios de tempo médio de espera.
+  estimativa de tempo de espera, relatórios de tempo médio de espera.

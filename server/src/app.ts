@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import { z } from 'zod';
@@ -124,6 +126,17 @@ export function criarApp(avisarMudanca: () => void = () => {}) {
     avisarMudanca();
     res.json(entrada);
   });
+
+  // ---------- Site (React) ----------
+  // Em produção a própria API entrega o site já compilado (web/dist), assim site, API e
+  // WebSocket ficam no mesmo endereço e não há problema de CORS.
+  const pastaSite = config.webDist ?? fileURLToPath(new URL('../../web/dist', import.meta.url));
+  if (existsSync(pastaSite)) {
+    app.use(express.static(pastaSite, { index: false }));
+    app.get(/^(?!\/api\/|\/socket\.io\/).*/, (_req, res) => {
+      res.sendFile('index.html', { root: pastaSite });
+    });
+  }
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
