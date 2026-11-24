@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"require('node:fs').copyFileSync('src/schema.sql','dist/schema.sql')\"",
     "start": "node dist/index.js",
+    "start:prod": "node dist/migrate.js && node dist/index.js",
     "migrate": "tsx src/migrate.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
@@ -34,5 +35,8 @@
     "vitest": "^5.1.0"
   },
   "type": "module",
-  "private": true
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
 }

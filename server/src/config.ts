@@ -12,6 +12,8 @@ export const config = {
   painelSenha: obrigatoria('PAINEL_SENHA'),
   jwtSecret: obrigatoria('JWT_SECRET'),
   webUrl: process.env.WEB_URL ?? 'http://localhost:5173',
+  // Pasta do site compilado; se não for definida, usa ../../web/dist (relativo a dist/)
+  webDist: process.env.WEB_DIST || undefined,
   restauranteNome: process.env.RESTAURANTE_NOME ?? "Don'Ana",
   whatsapp: {
     modo: (process.env.WHATSAPP_MODO ?? 'link') as 'link' | 'cloud_api',

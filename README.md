@@ -50,6 +50,28 @@ Testes da API (atenção: limpam a tabela do banco do `DATABASE_URL`, use um ban
 cd server && npm test
 ```
 
+## Publicação (Render + domínio donana.cezbyte.com.br)
+
+Em produção um único serviço Node entrega o site (`web/dist`), a API e o WebSocket no mesmo endereço.
+O arquivo `render.yaml` (Blueprint do Render) cria o PostgreSQL e o serviço web, e já declara o domínio
+`donana.cezbyte.com.br`. Ao iniciar, o serviço roda `migrate` (o `schema.sql` pode rodar várias vezes sem problema).
+
+1. Em https://dashboard.render.com: **New > Blueprint**, conecte o GitHub e escolha `cezarmop/fila-donana`.
+2. Informe a `PAINEL_SENHA` quando pedir (o `JWT_SECRET` é gerado sozinho) e aplique.
+3. Anote o endereço do serviço (ex.: `fila-donana.onrender.com`; pode vir com sufixo se o nome já existir).
+4. Na Hostinger (hPanel > Domínios > cezbyte.com.br > DNS), crie o registro:
+
+   | Tipo | Nome | Aponta para | TTL |
+   |---|---|---|---|
+   | CNAME | `donana` | `<endereço do passo 3>` | padrão |
+
+5. No Render, em *Settings > Custom Domains*, clique em **Verify**. O certificado HTTPS é emitido pelo Render.
+
+Limites do plano gratuito (confira os atuais em https://render.com/docs/free): o serviço "dorme" depois de um
+tempo sem acesso e o primeiro acesso seguinte demora; o PostgreSQL gratuito do Render tem prazo de validade.
+Para uma demonstração, abra o site alguns minutos antes. Se o banco expirar, dá para trocar `DATABASE_URL`
+por outro PostgreSQL (ex.: Neon ou Supabase) sem mudar código.
+
 ## App Android (APK de teste)
 
 A pasta `android/` tem um app nativo simples (Java, WebView) que abre o site da fila dentro do celular.
