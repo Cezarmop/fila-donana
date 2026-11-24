@@ -110,8 +110,7 @@ consegue ver ou cancelar a própria entrada, e o telefone nunca é exibido para 
 
 ## Decisões e limitações conhecidas (bom material para o TCC)
 
-- As telas consultam a API periodicamente (polling) e cada uma só recebe o que tem permissão de ver.
-  Há também uma atualização a cada 30 s caso a conexão caia (comum quando o celular bloqueia a tela).
+- As telas consultam a API a cada 5 s (polling), pausando com a aba em segundo plano; cada uma só recebe o que tem permissão de ver.
 - O mesmo telefone não entra duas vezes na fila ativa (ler o QR de novo devolve a mesma entrada).
 - Login do painel com uma senha única (`PAINEL_SENHA`) e token JWT de 14 h. Para vários funcionários, criar tabela de usuários.
 - **A fazer:** limitar requisições por IP no cadastro (anti-spam), política de retenção/exclusão dos dados (LGPD),
