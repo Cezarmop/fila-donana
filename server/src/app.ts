@@ -19,6 +19,15 @@ const cadastroSchema = z.object({
   consentimento: z.literal(true, { error: 'É preciso aceitar o aviso de privacidade' }),
 });
 
+/** Cadastro feito pela recepção: telefone e sobrenome opcionais (quem não tem celular é chamado na porta). */
+const cadastroRecepcaoSchema = z.object({
+  nome: z.string().trim().min(2, 'Informe o nome').max(60),
+  sobrenome: z.string().trim().max(80).default(''),
+  telefone: z.string().trim().default(''),
+  pessoas: z.coerce.number().int().min(1, 'Mínimo 1 pessoa').max(30, 'Máximo 30 pessoas'),
+  consentimento: z.literal(true, { error: 'Confirme que o cliente autorizou o uso dos dados' }),
+});
+
 const statusSchema = z.object({
   status: z.enum(['atendido', 'nao_compareceu', 'cancelado', 'aguardando']),
 });
@@ -97,6 +106,30 @@ export function criarApp(avisarMudanca: () => void = () => {}) {
     res.json(await fila.listarParaPainel());
   });
 
+  app.post('/api/painel/fila', exigirRecepcao, async (req, res) => {
+    const parse = cadastroRecepcaoSchema.safeParse(req.body);
+    if (!parse.success) {
+      res.status(400).json({ erro: parse.error.issues[0]?.message ?? 'Dados inválidos' });
+      return;
+    }
+    let telefone: string | null = null;
+    if (parse.data.telefone) {
+      telefone = normalizarTelefoneBR(parse.data.telefone);
+      if (!telefone) {
+        res.status(400).json({ erro: 'Telefone inválido. Use DDD + número, ex.: (48) 99999-8888, ou deixe em branco' });
+        return;
+      }
+      if (await fila.buscarAtivaPorTelefone(telefone)) {
+        res.status(409).json({ erro: 'Este telefone já está na fila' });
+        return;
+      }
+    }
+    const { nome, sobrenome, pessoas } = parse.data;
+    const criada = await fila.criarEntrada({ nome, sobrenome, telefone, pessoas, origem: 'recepcao' });
+    avisarMudanca();
+    res.status(201).json({ id: criada.id });
+  });
+
   app.post('/api/painel/fila/:id/chamar', exigirRecepcao, async (req, res) => {
     if (!uuid.safeParse(req.params.id).success) {
       res.status(404).json({ erro: 'Entrada não encontrada' });
@@ -108,7 +141,10 @@ export function criarApp(avisarMudanca: () => void = () => {}) {
       return;
     }
     avisarMudanca();
-    const notificacao = await notificarChamada({ nome: entrada.nome, telefone: entrada.telefone });
+    // Sem telefone (cadastro feito pela recepção): não há WhatsApp, a recepção chama na porta.
+    const notificacao = entrada.telefone
+      ? await notificarChamada({ nome: entrada.nome, telefone: entrada.telefone })
+      : null;
     res.json({ entrada, notificacao });
   });
 

@@ -20,7 +20,7 @@ quem chegou ou não veio.
 |---|---|---|
 | `/entrar` | Cliente (abre pelo QR) | Cadastro na fila com aceite de privacidade (LGPD) |
 | `/acompanhar/:id?token=…` | Cliente | Posição em tempo real; aviso visual e vibração quando chamado; sair da fila |
-| `/painel` | Recepção (senha) | Fila em ordem de chegada; Chamar, Chegou, Chamar de novo, Não veio, Remover; histórico de 12 h |
+| `/painel` | Recepção (senha) | Fila em ordem de chegada; Chamar, Chegou, Chamar de novo, Não veio, Remover; histórico de 12 h; **Adicionar à fila** (para quem tem dificuldade com o QR, celular opcional) e **QR code** na tela |
 | `/cartaz` | Recepção | Cartaz com QR code para imprimir e colar na porta |
 
 ## Como rodar (desenvolvimento)
@@ -54,8 +54,9 @@ cd server && npm test
 
 Na Vercel o site (`web/dist`) é servido como arquivo estático e a API Express roda como função
 (`api/index.js`, que usa o mesmo `criarApp()` do servidor). A configuração está em `vercel.json`.
-O build roda `migrate` no banco (o `schema.sql` pode rodar várias vezes sem problema), então o
-`DATABASE_URL` precisa existir antes do primeiro deploy.
+O build de **produção** roda `migrate` no banco (o `schema.sql` pode rodar várias vezes sem problema), então o
+`DATABASE_URL` precisa existir antes do primeiro deploy. Deploys de *preview* (PRs) não rodam a migração,
+para não alterar o banco de produção antes do merge.
 
 **Tempo real:** as funções da Vercel não mantêm um servidor WebSocket único compartilhado entre instâncias,
 então as telas do cliente e do painel se atualizam por consulta periódica (*polling*) a cada 5 segundos,

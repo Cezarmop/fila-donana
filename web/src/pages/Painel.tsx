@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import Cabecalho from './Cabecalho'
+import AdicionarNaFila from './AdicionarNaFila'
+import QrEntrada from './QrEntrada'
 import { api, ErroApi, formatarTelefone, minutosDesde, type Entrada, type Status, useAtualizacaoPeriodica } from '../lib/api'
 
 const CHAVE_TOKEN = 'fila-donana:painel'
@@ -44,6 +46,7 @@ export default function Painel() {
   const [avisos, setAvisos] = useState<Record<string, Notificacao>>({})
   const [erro, setErro] = useState('')
   const [, setRelogio] = useState(0)
+  const [painelAberto, setPainelAberto] = useState<'adicionar' | 'qr' | null>(null)
 
   const sair = useCallback(() => { sessionStorage.removeItem(CHAVE_TOKEN); setToken('') }, [])
 
@@ -68,8 +71,8 @@ export default function Painel() {
 
   async function chamar(e: Entrada) {
     try {
-      const r = await api<{ notificacao: Notificacao }>(`/api/painel/fila/${e.id}/chamar`, { method: 'POST', token })
-      setAvisos((a) => ({ ...a, [e.id]: r.notificacao }))
+      const r = await api<{ notificacao: Notificacao | null }>(`/api/painel/fila/${e.id}/chamar`, { method: 'POST', token })
+      if (r.notificacao) setAvisos((a) => ({ ...a, [e.id]: r.notificacao! }))
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Erro')
     }
@@ -98,9 +101,30 @@ export default function Painel() {
           <span><strong>{aguardando.length}</strong> grupos aguardando</span>
           <span><strong>{pessoasAguardando}</strong> pessoas</span>
         </div>
+        <button className="botao primario pequeno" onClick={() => setPainelAberto((p) => (p === 'adicionar' ? null : 'adicionar'))}>
+          + Adicionar à fila
+        </button>
+        <button className="botao secundario pequeno" onClick={() => setPainelAberto((p) => (p === 'qr' ? null : 'qr'))}>
+          QR code
+        </button>
         <button className="botao secundario pequeno" onClick={sair}>Sair</button>
       </div>
       {erro && <p className="erro" role="alert">{erro}</p>}
+
+      {painelAberto === 'adicionar' && (
+        <AdicionarNaFila token={token} aoAdicionar={carregar} aoFechar={() => setPainelAberto(null)} />
+      )}
+      {painelAberto === 'qr' && (
+        <div className="cartao centro qr-recepcao">
+          <p className="grande">Entre na fila pelo celular</p>
+          <QrEntrada />
+          <p className="discreto">Vire a tela para o cliente ler o código com a câmera.</p>
+          <div className="acoes-form">
+            <a className="botao secundario" href="/cartaz" target="_blank" rel="noreferrer">Abrir cartaz para imprimir</a>
+            <button className="botao primario" onClick={() => setPainelAberto(null)}>Fechar</button>
+          </div>
+        </div>
+      )}
 
       {ativos.length === 0 && <p className="cartao centro discreto">Ninguém na fila agora.</p>}
       <ol className="lista-fila">
@@ -111,8 +135,14 @@ export default function Painel() {
             <li key={e.id} className={`item ${e.status}`}>
               <div className="pos">{e.status === 'chamado' ? '🔔' : `${posicao}º`}</div>
               <div className="info">
-                <strong>{e.nome} {e.sobrenome}</strong>
-                <span>{e.pessoas} {e.pessoas === 1 ? 'pessoa' : 'pessoas'} · <span className="nowrap">{formatarTelefone(e.telefone)}</span></span>
+                <strong>
+                  {e.nome} {e.sobrenome}
+                  {e.origem === 'recepcao' && <span className="etiqueta">recepção</span>}
+                </strong>
+                <span>
+                  {e.pessoas} {e.pessoas === 1 ? 'pessoa' : 'pessoas'} ·{' '}
+                  <span className="nowrap">{e.telefone ? formatarTelefone(e.telefone) : 'sem celular, chamar na porta'}</span>
+                </span>
                 <span className="discreto">
                   Na fila há {minutosDesde(e.criado_em)} min
                   {e.chamado_em && e.status === 'chamado' && ` · chamado há ${minutosDesde(e.chamado_em)} min`}

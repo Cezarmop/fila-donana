@@ -6,24 +6,25 @@ export interface Entrada {
   id: string;
   nome: string;
   sobrenome: string;
-  telefone: string;
+  telefone: string | null;
   pessoas: number;
   status: Status;
+  origem: 'qr' | 'recepcao';
   criado_em: Date;
   chamado_em: Date | null;
   finalizado_em: Date | null;
   vezes_chamado: number;
 }
 
-const CAMPOS = 'id, nome, sobrenome, telefone, pessoas, status, criado_em, chamado_em, finalizado_em, vezes_chamado';
+const CAMPOS = 'id, nome, sobrenome, telefone, pessoas, status, origem, criado_em, chamado_em, finalizado_em, vezes_chamado';
 
 export async function criarEntrada(dados: {
-  nome: string; sobrenome: string; telefone: string; pessoas: number;
+  nome: string; sobrenome: string; telefone: string | null; pessoas: number; origem?: 'qr' | 'recepcao';
 }): Promise<{ id: string; token: string }> {
   const { rows } = await pool.query(
-    `INSERT INTO entradas_fila (nome, sobrenome, telefone, pessoas, consentimento_em)
-     VALUES ($1, $2, $3, $4, now()) RETURNING id, token`,
-    [dados.nome, dados.sobrenome, dados.telefone, dados.pessoas],
+    `INSERT INTO entradas_fila (nome, sobrenome, telefone, pessoas, origem, consentimento_em)
+     VALUES ($1, $2, $3, $4, $5, now()) RETURNING id, token`,
+    [dados.nome, dados.sobrenome, dados.telefone, dados.pessoas, dados.origem ?? 'qr'],
   );
   return rows[0];
 }

@@ -1,15 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Cabecalho from './Cabecalho'
-import { api, lerEntradaLocal, salvarEntradaLocal, type StatusCliente } from '../lib/api'
-
-function mascaraTelefone(valor: string): string {
-  const d = valor.replace(/\D/g, '').slice(0, 11)
-  if (d.length <= 2) return d.length ? `(${d}` : ''
-  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
-  const corte = d.length === 11 ? 7 : 6
-  return `(${d.slice(0, 2)}) ${d.slice(2, corte)}-${d.slice(corte)}`
-}
+import { api, lerEntradaLocal, mascaraTelefone, salvarEntradaLocal, type StatusCliente } from '../lib/api'
 
 export default function Entrar() {
   const navigate = useNavigate()

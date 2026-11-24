@@ -6,9 +6,10 @@ export interface Entrada {
   id: string
   nome: string
   sobrenome: string
-  telefone: string
+  telefone: string | null
   pessoas: number
   status: Status
+  origem: 'qr' | 'recepcao'
   criado_em: string
   chamado_em: string | null
   finalizado_em: string | null
@@ -80,6 +81,18 @@ export function useAtualizacaoPeriodica(carregar: () => void, intervaloMs = INTE
 
 export function minutosDesde(iso: string): number {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))
+}
+
+/** Endereço da página de cadastro do cliente (o QR code aponta para cá). */
+export const urlEntrada = () => `${import.meta.env.VITE_PUBLIC_URL ?? window.location.origin}/entrar`
+
+/** Máscara (48) 99999-8888 enquanto a pessoa digita. */
+export function mascaraTelefone(valor: string): string {
+  const d = valor.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 2) return d.length ? `(${d}` : ''
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  const corte = d.length === 11 ? 7 : 6
+  return `(${d.slice(0, 2)}) ${d.slice(2, corte)}-${d.slice(corte)}`
 }
 
 export function formatarTelefone(e164: string): string {
